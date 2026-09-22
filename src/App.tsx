@@ -23,6 +23,7 @@ export function App() {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPaymentPackageId, setSelectedPaymentPackageId] = useState<string | undefined>(undefined);
+  const [selectedPaymentAmount, setSelectedPaymentAmount] = useState<number | undefined>(undefined);
 
   const handleOpenContact = () => {
     const contactElem = document.getElementById('contact');
@@ -38,8 +39,9 @@ export function App() {
     }
   };
 
-  const handleOpenPayment = (packageId?: string) => {
+  const handleOpenPayment = (packageId?: string, amount?: number) => {
     setSelectedPaymentPackageId(packageId);
+    setSelectedPaymentAmount(amount);
     setIsPaymentModalOpen(true);
   };
 
@@ -126,8 +128,12 @@ export function App() {
         {/* Razorpay & Paytm Payment Gateway Checkout Modal */}
         <PaymentModal
           isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedPaymentAmount(undefined);
+          }}
           preselectedPackageId={selectedPaymentPackageId}
+          initialAmount={selectedPaymentAmount}
         />
 
         {/* Global Toast Notification System */}

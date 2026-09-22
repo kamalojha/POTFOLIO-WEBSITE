@@ -155,6 +155,21 @@
           "maxLength": 150,
           "description": "Customer email"
         },
+        "customerPhone": {
+          "type": "string",
+          "maxLength": 30,
+          "description": "Optional contact mobile number"
+        },
+        "bank": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Settlement or NetBanking bank name (e.g., State Bank of India (SBIN))"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Payment channel used (e.g. NetBanking, UPI, Card)"
+        },
         "purpose": {
           "type": "string",
           "minLength": 3,

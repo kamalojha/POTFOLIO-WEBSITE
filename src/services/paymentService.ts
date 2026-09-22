@@ -14,6 +14,8 @@ export interface PaymentRecord {
   purpose: string;
   status: 'completed' | 'pending' | 'failed' | 'flagged';
   transactionId: string;
+  bank?: string;
+  paymentMethod?: string;
   createdAt?: Timestamp | any;
 }
 
@@ -68,6 +70,8 @@ export async function recordPaymentInFirestore(data: {
   customerPhone?: string;
   purpose: string;
   transactionId: string;
+  bank?: string;
+  paymentMethod?: string;
   status?: 'completed' | 'pending' | 'failed' | 'flagged';
 }): Promise<string> {
   const paymentId = `pay_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -86,6 +90,8 @@ export async function recordPaymentInFirestore(data: {
       purpose: data.purpose.trim().substring(0, 200),
       status: data.status || 'completed',
       transactionId: data.transactionId,
+      ...(data.bank ? { bank: data.bank } : {}),
+      ...(data.paymentMethod ? { paymentMethod: data.paymentMethod } : {}),
       createdAt: serverTimestamp(),
     });
     return paymentId;
@@ -111,13 +117,15 @@ export const SEED_PAYMENT_RECORDS: PaymentRecord[] = [
     id: 'pay_seed_101',
     orderId: 'order_rzp_9847192841',
     gateway: 'razorpay',
-    amount: 999,
+    amount: 600,
     currency: 'INR',
     customerName: 'Aditya Sharma (ML Lead)',
     customerEmail: 'aditya.sharma@techlead.co.in',
     purpose: 'ML Pipeline & Architecture Review',
     status: 'completed',
     transactionId: 'pay_rzp_live_83921749',
+    bank: 'State Bank of India (SBIN)',
+    paymentMethod: 'NetBanking',
     createdAt: { toDate: () => new Date(Date.now() - 86400000 * 2) },
   },
   {
@@ -131,6 +139,8 @@ export const SEED_PAYMENT_RECORDS: PaymentRecord[] = [
     purpose: '1:1 Tech Interview & Resume Audit',
     status: 'completed',
     transactionId: 'ptm_txn_9281740192',
+    bank: 'Paytm Payments Bank (PYTM)',
+    paymentMethod: 'UPI - Paytm VPA',
     createdAt: { toDate: () => new Date(Date.now() - 86400000 * 4) },
   },
   {
@@ -144,6 +154,8 @@ export const SEED_PAYMENT_RECORDS: PaymentRecord[] = [
     purpose: 'Full-Stack System Design & Mentorship',
     status: 'completed',
     transactionId: 'pay_rzp_live_58291042',
+    bank: 'HDFC Bank (HDFC)',
+    paymentMethod: 'NetBanking',
     createdAt: { toDate: () => new Date(Date.now() - 86400000 * 7) },
   },
   {
@@ -157,6 +169,8 @@ export const SEED_PAYMENT_RECORDS: PaymentRecord[] = [
     purpose: 'Student & Open-Source Research Sponsor',
     status: 'completed',
     transactionId: 'ptm_txn_1982740291',
+    bank: 'Paytm UPI QR',
+    paymentMethod: 'UPI Intent',
     createdAt: { toDate: () => new Date(Date.now() - 86400000 * 10) },
   },
 ];

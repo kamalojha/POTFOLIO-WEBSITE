@@ -64,7 +64,7 @@ service cloud.firestore {
     // Payment validation helper
     function isValidPayment(data) {
       return data.keys().hasAll(['orderId', 'gateway', 'amount', 'currency', 'customerName', 'customerEmail', 'purpose', 'status', 'transactionId', 'createdAt']) &&
-        data.keys().hasOnly(['orderId', 'gateway', 'amount', 'currency', 'customerName', 'customerEmail', 'customerPhone', 'purpose', 'status', 'transactionId', 'createdAt']) &&
+        data.keys().hasOnly(['orderId', 'gateway', 'amount', 'currency', 'customerName', 'customerEmail', 'customerPhone', 'bank', 'paymentMethod', 'purpose', 'status', 'transactionId', 'createdAt']) &&
         data.orderId is string && data.orderId.size() >= 3 && data.orderId.size() <= 100 &&
         data.gateway in ['razorpay', 'paytm'] &&
         data.amount is int && data.amount > 0 && data.amount <= 1000000 &&
@@ -73,7 +73,10 @@ service cloud.firestore {
         data.customerEmail is string && data.customerEmail.size() >= 5 && data.customerEmail.size() <= 150 &&
         data.purpose is string && data.purpose.size() >= 3 && data.purpose.size() <= 200 &&
         data.status in ['completed', 'pending', 'failed', 'flagged'] &&
-        data.transactionId is string && data.transactionId.size() >= 3 && data.transactionId.size() <= 128;
+        data.transactionId is string && data.transactionId.size() >= 3 && data.transactionId.size() <= 128 &&
+        (!('bank' in data) || (data.bank is string && data.bank.size() <= 120)) &&
+        (!('paymentMethod' in data) || (data.paymentMethod is string && data.paymentMethod.size() <= 80)) &&
+        (!('customerPhone' in data) || (data.customerPhone is string && data.customerPhone.size() <= 30));
     }
 
     // Inquiries Collection (Inbound Contact Messages)
