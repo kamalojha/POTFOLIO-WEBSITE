@@ -36,7 +36,7 @@ export const Navbar: React.FC<Props> = ({ onOpenResume, onOpenContact, onOpenPay
             Endorsements
           </a>
           <a href="#consulting" className="hover:text-white transition-colors flex items-center gap-1 text-blue-400 font-semibold">
-            <span>Pay & Book</span>
+            <span>🇮🇳 Pay & Book (INR)</span>
           </a>
         </nav>
 

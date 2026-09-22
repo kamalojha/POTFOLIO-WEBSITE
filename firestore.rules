@@ -72,7 +72,7 @@ service cloud.firestore {
         data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 100 &&
         data.customerEmail is string && data.customerEmail.size() >= 5 && data.customerEmail.size() <= 150 &&
         data.purpose is string && data.purpose.size() >= 3 && data.purpose.size() <= 200 &&
-        data.status in ['completed', 'pending', 'failed'] &&
+        data.status in ['completed', 'pending', 'failed', 'flagged'] &&
         data.transactionId is string && data.transactionId.size() >= 3 && data.transactionId.size() <= 128;
     }
 

@@ -92,7 +92,7 @@ app.get('/api/payment/config', (_req: Request, res: Response) => {
       mid: paytmMid || 'KAMAL_PAYTM_MERCHANT_DEV',
       isConfigured: hasLivePaytm,
       sandbox: !hasLivePaytm,
-      upiVpa: 'kamal19ojha@paytm',
+      upiVpa: getEnv('PAYTM_UPI_VPA') || 'kamal2001ojha@paytm',
     },
   });
 });
@@ -232,8 +232,10 @@ app.post('/api/payment/paytm/initiate', (req: Request, res: Response) => {
     const mid = getEnv('PAYTM_MID') || 'KAMAL_PAYTM_MERCHANT_DEV';
     const txnToken = `ptm_tok_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 
+    const paytmUpiVpa = getEnv('PAYTM_UPI_VPA') || 'kamal2001ojha@paytm';
+
     // Standard Paytm UPI Deeplink format
-    const upiString = `upi://pay?pa=kamal19ojha@paytm&pn=Kamal%20Ojha&am=${numericAmount}&cu=INR&tn=${encodeURIComponent(
+    const upiString = `upi://pay?pa=${paytmUpiVpa}&pn=Kamal%20Ojha&am=${numericAmount}&cu=INR&tn=${encodeURIComponent(
       purpose || 'Technical Advisory - Kamal Ojha'
     )}`;
 
@@ -247,7 +249,7 @@ app.post('/api/payment/paytm/initiate', (req: Request, res: Response) => {
       currency: 'INR',
       mid,
       upiString,
-      upiVpa: 'kamal19ojha@paytm',
+      upiVpa: paytmUpiVpa,
       customerName,
       customerEmail,
       purpose,

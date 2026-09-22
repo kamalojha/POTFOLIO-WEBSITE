@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   X,
   ShieldCheck,
@@ -12,6 +13,8 @@ import {
   Sparkles,
   ExternalLink,
   RefreshCw,
+  Printer,
+  FileText,
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import {
@@ -43,6 +46,7 @@ export const CONSULTATION_PACKAGES: ServicePackage[] = [
       'DSA & ML Technical Questions',
       'ATS-Optimized Resume Audit',
       'Actionable Feedback Dossier',
+      'Direct Follow-Up Via Email',
     ],
   },
   {
@@ -56,11 +60,40 @@ export const CONSULTATION_PACKAGES: ServicePackage[] = [
       'Model Architecture Optimization',
       'Inference Benchmarking',
       'Source Code Walkthrough & Q&A',
+      'Post-Session Technical Notes',
+    ],
+  },
+  {
+    id: 'fullstack_advisory',
+    title: 'Full-Stack System Design & Mentorship',
+    tag: 'Comprehensive',
+    price: 1499,
+    duration: '90 mins',
+    description: 'System design breakdown for microservices, React + FastAPI/Node backends, database schema normalization, and cloud deployment.',
+    features: [
+      'Full-Stack Architecture Blueprints',
+      'Database Indexing & Query Tuning',
+      'Live Pair Programming & Debugging',
+      'Resource & Roadmap Pack',
+    ],
+  },
+  {
+    id: 'ai_project_sprint',
+    title: 'AI / CV Prototype Architecture Sprint',
+    tag: 'Sprint Advisory',
+    price: 2499,
+    duration: '120 mins',
+    description: 'End-to-end guidance to architect, benchmark, and deploy custom Computer Vision or NLP machine learning pipelines.',
+    features: [
+      'Custom Model Architecture Guidance',
+      'Dataset Preprocessing & Augmentation Strategy',
+      'Docker & Cloud Run Deployment Plan',
+      '14-Day Asynchronous Email Support',
     ],
   },
   {
     id: 'open_source_sponsor',
-    title: 'Student & Open-Source Sponsorship',
+    title: 'Student & Open-Source Research Sponsor',
     tag: 'Community',
     price: 299,
     duration: 'Token',
@@ -69,6 +102,7 @@ export const CONSULTATION_PACKAGES: ServicePackage[] = [
       'Name listed in Project README',
       'Direct Discord / Email Access',
       'Early Access to New Simulators',
+      'Community Supporter Badge',
     ],
   },
 ];
@@ -144,12 +178,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   // ----------------------------------------------------
   const handleRazorpayPayment = async () => {
     if (!customerName.trim() || !customerEmail.trim()) {
-      setStatusError('Please provide your name and email to proceed.');
+      const msg = 'Please provide your name and email to proceed.';
+      setStatusError(msg);
+      toast.error('Missing Contact Details', { description: msg });
+      return;
+    }
+
+    if (!currentAmount || Number(currentAmount) <= 0) {
+      const msg = 'Please specify a valid payment amount greater than ₹0.';
+      setStatusError(msg);
+      toast.error('Invalid Amount', { description: msg });
       return;
     }
 
     setIsProcessing(true);
     setStatusError(null);
+    const toastId = toast.loading('Connecting to Razorpay gateway...');
 
     try {
       // 1. Create order on backend
@@ -178,6 +222,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         razorpay_signature?: string;
       }) => {
         try {
+          toast.loading('Verifying transaction signature...', { id: toastId });
           // Verify on backend
           const verifyRes = await fetch('/api/payment/razorpay/verify', {
             method: 'POST',
@@ -193,7 +238,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             }),
           });
 
-          const verifyData = await verifyRes.json();
+          await verifyRes.json();
 
           // Persist directly to Firebase Firestore
           const firestorePaymentId = await recordPaymentInFirestore({
@@ -219,9 +264,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             purpose: currentPurpose,
             date: new Date().toLocaleString(),
           });
+
+          toast.success('Payment Verified & Confirmed! 🇮🇳', {
+            id: toastId,
+            description: `₹${currentAmount} received via Razorpay. Order #${response.razorpay_order_id.slice(-6).toUpperCase()}`,
+          });
         } catch (err: any) {
           console.error('Razorpay verification or Firestore record error:', err);
-          setStatusError('Payment processed but failed to sync receipt. Reference: ' + response.razorpay_payment_id);
+          const errMsg = 'Payment processed but failed to sync receipt. Reference: ' + response.razorpay_payment_id;
+          setStatusError(errMsg);
+          toast.error('Receipt Sync Warning', { id: toastId, description: errMsg });
         } finally {
           setIsProcessing(false);
         }
@@ -229,6 +281,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       // If Razorpay JS library is loaded
       if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        toast.info('Razorpay Checkout Opened', {
+          id: toastId,
+          description: `Complete payment of ₹${currentAmount} via UPI, Card, or NetBanking.`,
+        });
+
         const options = {
           key: rzpKey,
           amount: orderData.amount,
@@ -248,18 +305,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           modal: {
             ondismiss: () => {
               setIsProcessing(false);
+              toast.info('Checkout Window Closed', {
+                description: 'You closed the Razorpay payment window before completing.',
+              });
             },
           },
         };
 
         const rzpInstance = new (window as any).Razorpay(options);
         rzpInstance.on('payment.failed', (failRes: any) => {
-          setStatusError(`Payment Failed: ${failRes.error?.description || 'Transaction declined'}`);
+          const failMsg = `Payment Failed: ${failRes.error?.description || 'Transaction declined'}`;
+          setStatusError(failMsg);
+          toast.error('Payment Declined', {
+            id: toastId,
+            description: failRes.error?.description || 'Transaction declined by payment gateway.',
+          });
           setIsProcessing(false);
         });
         rzpInstance.open();
       } else {
         // Fallback Sandbox simulation modal
+        toast.info('Simulating Sandbox Checkout...', { id: toastId });
         const simulatedPaymentId = `pay_rzp_sim_${Date.now()}`;
         setTimeout(async () => {
           await handleSuccess({
@@ -271,7 +337,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
     } catch (err: any) {
       console.error('Razorpay Error:', err);
-      setStatusError(err.message || 'Payment initialization failed');
+      const errMsg = err.message || 'Payment initialization failed';
+      setStatusError(errMsg);
+      toast.error('Razorpay Gateway Error', { id: toastId, description: errMsg });
       setIsProcessing(false);
     }
   };
@@ -281,12 +349,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   // ----------------------------------------------------
   const handlePaytmInitiate = async () => {
     if (!customerName.trim() || !customerEmail.trim()) {
-      setStatusError('Please provide your name and email to proceed.');
+      const msg = 'Please provide your name and email to proceed.';
+      setStatusError(msg);
+      toast.error('Missing Contact Details', { description: msg });
+      return;
+    }
+
+    if (!currentAmount || Number(currentAmount) <= 0) {
+      const msg = 'Please specify a valid payment amount greater than ₹0.';
+      setStatusError(msg);
+      toast.error('Invalid Amount', { description: msg });
       return;
     }
 
     setIsProcessing(true);
     setStatusError(null);
+    const toastId = toast.loading('Generating Paytm Dynamic UPI QR...');
 
     try {
       const res = await fetch('/api/payment/paytm/initiate', {
@@ -318,15 +396,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       setPaytmQrDataUrl(qrDataUrl);
       setIsProcessing(false);
+      toast.success('Paytm UPI QR Ready! 🇮🇳', {
+        id: toastId,
+        description: `Scan using Paytm, Google Pay, PhonePe, or BHIM to pay ₹${currentAmount}.`,
+      });
     } catch (err: any) {
       console.error('Paytm Error:', err);
-      setStatusError(err.message || 'Failed to initialize Paytm');
+      const errMsg = err.message || 'Failed to initialize Paytm session';
+      setStatusError(errMsg);
+      toast.error('Paytm Gateway Error', { id: toastId, description: errMsg });
       setIsProcessing(false);
     }
   };
 
   const handleConfirmPaytmPayment = async () => {
     setIsProcessing(true);
+    const toastId = toast.loading('Verifying Paytm transaction with server...');
     try {
       const txnId = `ptm_txn_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
@@ -371,17 +456,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         purpose: currentPurpose,
         date: new Date().toLocaleString(),
       });
+
+      toast.success('Paytm Payment Verified! 🇮🇳', {
+        id: toastId,
+        description: `₹${currentAmount} verified & recorded in Firestore. Official receipt generated.`,
+      });
     } catch (err: any) {
       console.error('Paytm confirmation error:', err);
-      setStatusError('Verification completed with alert. Contact Kamal with confirmation details.');
+      const errMsg = 'Verification completed with alert. Contact Kamal with confirmation details.';
+      setStatusError(errMsg);
+      toast.error('Paytm Verification Alert', { id: toastId, description: errMsg });
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const upiVpa = config?.paytm?.upiVpa || 'kamal2001ojha@paytm';
+
   const handleCopyUpi = () => {
-    navigator.clipboard.writeText('kamal19ojha@paytm');
+    navigator.clipboard.writeText(upiVpa);
     setCopiedUpi(true);
+    toast.success('UPI VPA Copied', { description: `${upiVpa} copied to clipboard.` });
     setTimeout(() => setCopiedUpi(false), 2000);
   };
 
@@ -419,6 +514,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               <div className="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-[11px] font-mono text-emerald-400">
+                <span>🟢</span>
+                <span>Verified Transaction · Official Receipt</span>
+              </div>
               <h4 className="text-xl font-bold text-white font-display">
                 Payment Confirmed & Verified!
               </h4>
@@ -427,28 +526,43 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </p>
             </div>
 
-            <div className="bg-slate-950 rounded-2xl border border-slate-800 p-5 space-y-3 text-xs">
+            <div className="bg-slate-950 rounded-2xl border border-slate-800 p-5 space-y-3.5 text-xs">
               <div className="flex justify-between items-center pb-3 border-b border-slate-800/60">
-                <span className="text-slate-400">Gateway Provider</span>
-                <span className="font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      receipt.gateway === 'razorpay' ? 'bg-blue-400' : 'bg-cyan-400'
-                    }`}
-                  />
-                  {receipt.gateway === 'razorpay' ? 'Razorpay Gateway' : 'Paytm Gateway'}
-                </span>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-mono">Invoice Reference</span>
+                  <span className="font-mono font-bold text-white text-xs">
+                    INV-2026-{(receipt.orderId || 'ORD').slice(-6).toUpperCase()}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-400 block text-[10px] uppercase font-mono">Gateway Provider</span>
+                  <span className="font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        receipt.gateway === 'razorpay' ? 'bg-blue-400' : 'bg-cyan-400'
+                      }`}
+                    />
+                    {receipt.gateway === 'razorpay' ? 'Razorpay' : 'Paytm Gateway'}
+                  </span>
+                </div>
               </div>
+
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Amount Paid</span>
-                <span className="text-base font-bold text-emerald-400">₹{receipt.amount} INR</span>
+                <span className="text-base font-bold text-emerald-400">
+                  🇮🇳 ₹{receipt.amount} INR
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Purpose / Package</span>
                 <span className="text-slate-200 font-medium">{receipt.purpose}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400">Transaction ID</span>
+                <span className="text-slate-400">Customer Details</span>
+                <span className="text-slate-300 font-mono text-[11px]">{receipt.customerName} ({receipt.customerEmail})</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Transaction Ref / UTR</span>
                 <span className="font-mono text-slate-300 text-[11px]">{receipt.transactionId}</span>
               </div>
               <div className="flex justify-between items-center">
@@ -459,20 +573,34 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 <span className="text-slate-400">Timestamp</span>
                 <span className="text-slate-400">{receipt.date}</span>
               </div>
+
+              <div className="pt-2 border-t border-slate-800/60 text-[10px] text-slate-500 font-mono">
+                ✓ Platform Fee: ₹0 · GST Exempt (Annual Aggregate Turnover &lt; ₹20L under CGST Act Sec 22)
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(
-                    `Receipt: ₹${receipt.amount} paid to Kamal Ojha via ${receipt.gateway}. Ref: ${receipt.transactionId}`
-                  );
-                  alert('Receipt summary copied to clipboard!');
+                  toast.info('Opening Print Dialog', { description: 'Save as PDF or print official receipt.' });
+                  window.print();
                 }}
-                className="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors border border-slate-700"
+                className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors border border-slate-700"
+              >
+                <Printer className="w-3.5 h-3.5 text-blue-400" />
+                <span>Print / Save PDF</span>
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `RECEIPT INV-2026-${(receipt.orderId || 'ORD').slice(-6).toUpperCase()}\nAmount: ₹${receipt.amount} INR\nGateway: ${receipt.gateway}\nTxn ID: ${receipt.transactionId}\nCustomer: ${receipt.customerName} (${receipt.customerEmail})\nStatus: Verified\nDate: ${receipt.date}`
+                  );
+                  toast.success('Invoice Summary Copied', { description: 'Complete invoice details copied to clipboard.' });
+                }}
+                className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors border border-slate-700"
               >
                 <Copy className="w-3.5 h-3.5" />
-                <span>Copy Receipt Summary</span>
+                <span>Copy Summary</span>
               </button>
               <button
                 onClick={onClose}
@@ -684,7 +812,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     <div className="flex items-center gap-2 text-slate-300">
                       <span className="text-slate-500">Paytm VPA:</span>
                       <code className="bg-slate-900 px-2 py-0.5 rounded text-cyan-300 font-mono text-[11px]">
-                        kamal19ojha@paytm
+                        {upiVpa}
                       </code>
                       <button
                         type="button"

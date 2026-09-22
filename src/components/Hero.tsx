@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Mail, Phone, Linkedin, MapPin, Copy, Check, ArrowDown, ExternalLink, Terminal, ShieldCheck } from 'lucide-react';
+import { Mail, Phone, Linkedin, MapPin, Copy, Check, ArrowDown, ExternalLink, Terminal, ShieldCheck, CreditCard } from 'lucide-react';
 import { PERSONAL_INFO } from '../data/portfolioData';
 
 interface Props {
   onOpenResume: () => void;
   onOpenContact: () => void;
   onExploreProjects: () => void;
+  onOpenPayment?: () => void;
 }
 
-export const Hero: React.FC<Props> = ({ onOpenResume, onOpenContact, onExploreProjects }) => {
+export const Hero: React.FC<Props> = ({ onOpenResume, onOpenContact, onExploreProjects, onOpenPayment }) => {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
 
@@ -38,7 +39,10 @@ export const Hero: React.FC<Props> = ({ onOpenResume, onOpenContact, onExplorePr
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-semibold">{PERSONAL_INFO.status}</span>
               <span aria-hidden="true" className="text-slate-600">·</span>
-              <span className="text-slate-400">Greater Noida, India</span>
+              <span className="text-slate-400 flex items-center gap-1">
+                <span>Greater Noida, India</span>
+                <span title="India">🇮🇳</span>
+              </span>
               <span aria-hidden="true" className="text-slate-600">·</span>
               <span className="text-blue-400">Entry-Level / Graduate Roles</span>
             </div>
@@ -119,6 +123,16 @@ export const Hero: React.FC<Props> = ({ onOpenResume, onOpenContact, onExplorePr
               >
                 <span>View Full Resume Dossier</span>
               </button>
+
+              {onOpenPayment && (
+                <button
+                  onClick={onOpenPayment}
+                  className="px-5 py-3 text-sm font-semibold text-emerald-300 hover:text-white bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/40 rounded-xl transition-all flex items-center gap-2 shadow-sm"
+                >
+                  <CreditCard className="w-4 h-4 text-emerald-400" />
+                  <span>Book & Pay (Razorpay / Paytm)</span>
+                </button>
+              )}
             </div>
 
             {/* Quantitative Proof Adjacency Metrics */}

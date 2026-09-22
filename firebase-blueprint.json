@@ -163,7 +163,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["completed", "pending", "failed"],
+          "enum": ["completed", "pending", "failed", "flagged"],
           "description": "Payment status"
         },
         "transactionId": {

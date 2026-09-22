@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { CreditCard } from 'lucide-react';
+import { Toaster } from 'sonner';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ProjectsSection } from './components/ProjectsSection';
@@ -57,6 +59,7 @@ export function App() {
             onOpenResume={() => setIsResumeModalOpen(true)}
             onOpenContact={handleOpenContact}
             onExploreProjects={handleExploreProjects}
+            onOpenPayment={() => handleOpenPayment()}
           />
 
           {/* 01. Featured Projects with Interactive Simulators */}
@@ -87,6 +90,27 @@ export function App() {
         {/* Clean Minimalist Footer */}
         <Footer />
 
+        {/* Floating Quick Pay & Advisory Launcher Button */}
+        <button
+          onClick={() => handleOpenPayment()}
+          className="fixed bottom-6 right-6 z-40 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl shadow-xl shadow-blue-600/30 flex items-center gap-2.5 transition-all hover:scale-105 group border border-blue-400/30 backdrop-blur-sm cursor-pointer"
+          title="Book Session & Pay via Razorpay or Paytm"
+        >
+          <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+            <CreditCard className="w-4 h-4 text-white" />
+          </div>
+          <div className="text-left">
+            <div className="text-[11px] font-bold tracking-wide uppercase leading-tight font-display">
+              Pay / Book Session
+            </div>
+            <div className="text-[10px] text-blue-100 flex items-center gap-1 font-mono">
+              <span>Razorpay</span>
+              <span>·</span>
+              <span>Paytm</span>
+            </div>
+          </div>
+        </button>
+
         {/* Project Deep Dive & Interactive Simulator Modal */}
         <ProjectDeepDiveModal
           project={selectedProject}
@@ -104,6 +128,21 @@ export function App() {
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
           preselectedPackageId={selectedPaymentPackageId}
+        />
+
+        {/* Global Toast Notification System */}
+        <Toaster
+          position="top-right"
+          theme="dark"
+          richColors
+          closeButton
+          toastOptions={{
+            style: {
+              background: '#0f172a',
+              borderColor: '#1e293b',
+              color: '#f8fafc',
+            },
+          }}
         />
       </div>
     </AuthProvider>
