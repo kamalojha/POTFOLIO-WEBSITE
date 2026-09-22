@@ -1,0 +1,7 @@
+{
+  "name": "Oneirica - Surrealist Dream Journal & Archetypal Analyst",
+  "description": "Voice-record waking dreams, generate surrealist artwork with Gemini, explore Jungian psychological interpretations, and converse with an AI dream symbologist.",
+  "requestFramePermissions": ["CAMERA_AND_MICROPHONE"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
