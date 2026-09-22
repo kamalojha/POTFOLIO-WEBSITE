@@ -6,15 +6,21 @@ import { SkillsSection } from './components/SkillsSection';
 import { ExperienceTimeline } from './components/ExperienceTimeline';
 import { EducationSection } from './components/EducationSection';
 import { CertificationsSection } from './components/CertificationsSection';
+import { EndorsementsSection } from './components/EndorsementsSection';
+import { PaymentSection } from './components/PaymentSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { ProjectDeepDiveModal } from './components/ProjectDeepDiveModal';
 import { ResumeModal } from './components/ResumeModal';
+import { PaymentModal } from './components/PaymentModal';
 import { Project } from './types/portfolio';
+import { AuthProvider } from './firebase/context';
 
 export function App() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedPaymentPackageId, setSelectedPaymentPackageId] = useState<string | undefined>(undefined);
 
   const handleOpenContact = () => {
     const contactElem = document.getElementById('contact');
@@ -30,56 +36,77 @@ export function App() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#090b10] text-[#e2e8f0] flex flex-col font-sans selection:bg-blue-600/30 selection:text-blue-200">
-      {/* 3-Zone Strict Top Bar Navigation */}
-      <Navbar
-        onOpenResume={() => setIsResumeModalOpen(true)}
-        onOpenContact={handleOpenContact}
-      />
+  const handleOpenPayment = (packageId?: string) => {
+    setSelectedPaymentPackageId(packageId);
+    setIsPaymentModalOpen(true);
+  };
 
-      <main className="flex-1">
-        {/* Split Hero Section */}
-        <Hero
+  return (
+    <AuthProvider>
+      <div className="min-h-screen bg-[#090b10] text-[#e2e8f0] flex flex-col font-sans selection:bg-blue-600/30 selection:text-blue-200">
+        {/* 3-Zone Strict Top Bar Navigation */}
+        <Navbar
           onOpenResume={() => setIsResumeModalOpen(true)}
           onOpenContact={handleOpenContact}
-          onExploreProjects={handleExploreProjects}
+          onOpenPayment={() => handleOpenPayment()}
         />
 
-        {/* 01. Featured Projects with Interactive Simulators */}
-        <ProjectsSection onSelectProject={(project) => setSelectedProject(project)} />
+        <main className="flex-1">
+          {/* Split Hero Section */}
+          <Hero
+            onOpenResume={() => setIsResumeModalOpen(true)}
+            onOpenContact={handleOpenContact}
+            onExploreProjects={handleExploreProjects}
+          />
 
-        {/* 02. Technical Capabilities & Stack */}
-        <SkillsSection />
+          {/* 01. Featured Projects with Interactive Simulators */}
+          <ProjectsSection onSelectProject={(project) => setSelectedProject(project)} />
 
-        {/* 03. Internships & Professional Training */}
-        <ExperienceTimeline />
+          {/* 02. Technical Capabilities & Stack */}
+          <SkillsSection />
 
-        {/* 04. Education & Academic Pedigree */}
-        <EducationSection />
+          {/* 03. Internships & Professional Training */}
+          <ExperienceTimeline />
 
-        {/* 05. Certifications & Accolades */}
-        <CertificationsSection />
+          {/* 04. Education & Academic Pedigree */}
+          <EducationSection />
 
-        {/* 06. Inbound Contact & Direct Inquiries */}
-        <ContactSection />
-      </main>
+          {/* 05. Certifications & Accolades */}
+          <CertificationsSection />
 
-      {/* Clean Minimalist Footer */}
-      <Footer />
+          {/* 06. Peer & Recruiter Endorsements (Firebase Realtime) */}
+          <EndorsementsSection />
 
-      {/* Project Deep Dive & Interactive Simulator Modal */}
-      <ProjectDeepDiveModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-      />
+          {/* 07. Technical Advisory, 1:1 Mentorship & Razorpay/Paytm Gateways */}
+          <PaymentSection onOpenPaymentModal={handleOpenPayment} />
 
-      {/* Full Resume Dossier Sheet Modal */}
-      <ResumeModal
-        isOpen={isResumeModalOpen}
-        onClose={() => setIsResumeModalOpen(false)}
-      />
-    </div>
+          {/* 08. Inbound Contact & Direct Inquiries */}
+          <ContactSection />
+        </main>
+
+        {/* Clean Minimalist Footer */}
+        <Footer />
+
+        {/* Project Deep Dive & Interactive Simulator Modal */}
+        <ProjectDeepDiveModal
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+        />
+
+        {/* Full Resume Dossier Sheet Modal */}
+        <ResumeModal
+          isOpen={isResumeModalOpen}
+          onClose={() => setIsResumeModalOpen(false)}
+        />
+
+        {/* Razorpay & Paytm Payment Gateway Checkout Modal */}
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          preselectedPackageId={selectedPaymentPackageId}
+        />
+      </div>
+    </AuthProvider>
   );
 }
 

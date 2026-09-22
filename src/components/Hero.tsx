@@ -34,11 +34,13 @@ export const Hero: React.FC<Props> = ({ onOpenResume, onOpenContact, onExplorePr
           {/* Left Column: Typographic & Role Authority */}
           <div className="lg:col-span-7 space-y-6">
             {/* Clean unboxed availability line with subtle typographic separator */}
-            <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-emerald-400">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{PERSONAL_INFO.status}</span>
+              <span className="font-semibold">{PERSONAL_INFO.status}</span>
               <span aria-hidden="true" className="text-slate-600">·</span>
               <span className="text-slate-400">Greater Noida, India</span>
+              <span aria-hidden="true" className="text-slate-600">·</span>
+              <span className="text-blue-400">Entry-Level / Graduate Roles</span>
             </div>
 
             {/* Display Headline with text-wrap: balance */}
@@ -47,7 +49,7 @@ export const Hero: React.FC<Props> = ({ onOpenResume, onOpenContact, onExplorePr
                 Architecting Machine Learning & Scalable Full-Stack Systems
               </h1>
               <p className="text-lg text-slate-300 font-medium pt-1">
-                Kamal Ojha <span aria-hidden="true" className="text-slate-600">/</span> B.E. Computer Science Engineering (2024)
+                Kamal Ojha <span aria-hidden="true" className="text-slate-600">/</span> Fresher & B.E. Computer Science Graduate (2024)
               </p>
             </div>
 

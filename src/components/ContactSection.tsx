@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, Linkedin, MapPin, Send, CheckCircle2, AlertCircle, Copy, Check } from 'lucide-react';
 import { PERSONAL_INFO } from '../data/portfolioData';
+import { submitInquiry } from '../services/inquiryService';
 
 export const ContactSection: React.FC = () => {
   const [name, setName] = useState('');
@@ -29,9 +30,9 @@ export const ContactSection: React.FC = () => {
   const setPrecomposedDraft = (template: 'interview' | 'ml_role' | 'fullstack') => {
     switch (template) {
       case 'interview':
-        setSubject('Interview Invitation — Software/ML Engineering Role');
+        setSubject('Interview Invitation — Graduate / Fresher Engineering Role');
         setMessage(
-          `Hi Kamal,\n\nWe reviewed your portfolio and were impressed by your deep learning work in healthcare AI and full-stack development. We would love to schedule a preliminary conversation regarding an engineering opening on our team.\n\nBest regards,\n`
+          `Hi Kamal,\n\nWe reviewed your portfolio and were impressed by your deep learning work in healthcare AI, full-stack projects, and strong academic background. We would love to schedule an initial interview regarding an Entry-Level / Graduate Engineering opening on our team.\n\nBest regards,\n`
         );
         break;
       case 'ml_role':
@@ -61,26 +62,44 @@ export const ContactSection: React.FC = () => {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch('/api/contact', {
+      // Direct write to Firebase Firestore
+      await submitInquiry({ name, email, subject, message });
+
+      // Also mirror to API endpoint for redundancy
+      fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, subject, message }),
-      });
+      }).catch(() => {});
 
-      const data = await response.json();
-      if (response.ok) {
-        setSubmitStatus('success');
-        setStatusMessage(data.message || 'Your message was successfully received by Kamal.');
-        setName('');
-        setEmail('');
-        setMessage('');
-      } else {
-        setSubmitStatus('error');
-        setStatusMessage(data.error || 'Failed to dispatch message. Please try again.');
-      }
+      setSubmitStatus('success');
+      setStatusMessage('Your message was successfully received and persisted in Firebase. Thank you!');
+      setName('');
+      setEmail('');
+      setMessage('');
     } catch (err: any) {
-      setSubmitStatus('error');
-      setStatusMessage('Network error. You can also contact directly via email or phone.');
+      console.warn('Firestore direct write error, falling back to server route:', err);
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, subject, message }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setSubmitStatus('success');
+          setStatusMessage(data.message || 'Your message was successfully received by Kamal.');
+          setName('');
+          setEmail('');
+          setMessage('');
+        } else {
+          setSubmitStatus('error');
+          setStatusMessage(data.error || 'Failed to dispatch message.');
+        }
+      } catch (fallbackErr) {
+        setSubmitStatus('error');
+        setStatusMessage('Network error. You can also contact directly via email or phone.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -97,7 +116,7 @@ export const ContactSection: React.FC = () => {
                 Direct Communication
               </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white font-display">
-                06. Get in Touch
+                08. Get in Touch
               </h2>
               <p className="text-sm text-slate-400 mt-2 leading-relaxed">
                 Currently open for Software Engineering, Machine Learning, and Data Engineering roles across India and remote global teams.

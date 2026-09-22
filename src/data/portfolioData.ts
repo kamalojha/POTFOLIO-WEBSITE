@@ -2,8 +2,8 @@ import { Project, SkillCategory, ExperienceItem, EducationItem, CertificationIte
 
 export const PERSONAL_INFO = {
   name: 'Kamal Ojha',
-  title: 'Software & Machine Learning Engineer',
-  tagline: 'Computer Science Engineering graduate with deep technical foundations in Python, Deep Learning, Computer Vision, and Full-Stack Systems.',
+  title: 'Software & Machine Learning Engineer (Fresher)',
+  tagline: 'Computer Science Engineering Graduate (Class of 2024) with deep technical foundations in Python, Deep Learning, Computer Vision, and Full-Stack Systems.',
   summary:
     'Computer Science Engineering graduate with a strong foundation in Python, machine learning, full-stack development, and computer vision. Experienced in building end-to-end applications spanning healthcare AI, web platforms, and network systems. Seeking a Software/ML/Data role where technical depth and problem-solving drive impact.',
   email: 'Kamal2001ojha@gmail.com',
@@ -11,12 +11,12 @@ export const PERSONAL_INFO = {
   linkedin: 'https://linkedin.com/in/kamal-ojha',
   linkedinHandle: 'linkedin.com/in/kamal-ojha',
   location: 'Greater Noida, Uttar Pradesh, India',
-  status: 'Open to Software, ML & Data Engineering Roles',
+  status: 'Fresher · Class of 2024 · Immediate Joiner',
   metrics: [
+    { label: 'Graduation Year', value: '2024' },
+    { label: 'Academic Distinction', value: 'B.E. CSE' },
     { label: 'Core Projects Built', value: '6+' },
-    { label: 'Engineering Experience', value: '3+ Yrs' },
     { label: 'Industry Certifications', value: '6 Awards' },
-    { label: 'Core Tech Domains', value: 'ML · Web · Systems' },
   ],
 };
 
